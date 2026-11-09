@@ -1,0 +1,325 @@
+:root {
+  --bg: #100b26;
+  --fg: #fff7e6;
+  --card: #20174d;
+  --btn-from: #ffd166;
+  --btn-to: #ff9f1c;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(circle at center, #1b1242 0%, #090616 100%);
+  color: var(--fg);
+  font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vh, 20px);
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Luces difusas de fondo */
+.lights-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.light {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.45;
+  animation: float 18s infinite ease-in-out alternate;
+}
+
+.light-1 { width: 380px; height: 380px; background: #7928ca; top: 10%; left: 10%; animation-duration: 20s; }
+.light-2 { width: 340px; height: 340px; background: #ff0080; top: 60%; left: 65%; animation-duration: 15s; }
+.light-3 { width: 320px; height: 320px; background: #0070f3; top: 40%; left: 20%; animation-duration: 22s; }
+.light-4 { width: 280px; height: 280px; background: #ffb703; top: 75%; left: 15%; animation-duration: 17s; }
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -35px) scale(1.1); }
+  100% { transform: translate(-30px, 45px) scale(0.95); }
+}
+
+/* Título */
+h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4.5vw, 2.5rem);
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 1.5px;
+  color: #38bdf8;
+  animation: neonSlowBlink 5.5s infinite linear;
+}
+
+@keyframes neonSlowBlink {
+  /* 1. Encendido estable y nítido durante la mayor parte del ciclo */
+  0%, 45% {
+    opacity: 1;
+    color: #38bdf8;
+    text-shadow:
+      0 0 6px rgba(56, 189, 248, 0.7),
+      0 0 18px rgba(14, 165, 233, 0.35);
+  }
+
+  /* 2. Primer corte de luz: caída abrupta bien visible (~200ms) */
+  46%, 49.5% {
+    opacity: 0.15;
+    color: #123348;
+    text-shadow: none;
+  }
+
+  /* 3. Reencendido rápido con chispa */
+  50.5%, 55% {
+    opacity: 1;
+    color: #38bdf8;
+    text-shadow:
+      0 0 6px rgba(56, 189, 248, 0.7),
+      0 0 18px rgba(14, 165, 233, 0.35);
+  }
+
+  /* 4. Segundo pestañeo corto (rebote típico de gas neón) */
+  56%, 57.5% {
+    opacity: 0.2;
+    color: #123348;
+    text-shadow: none;
+  }
+
+  /* 5. Vuelve al 100% y queda firme hasta el siguiente ciclo */
+  58.5%, 100% {
+    opacity: 1;
+    color: #38bdf8;
+    text-shadow:
+      0 0 6px rgba(56, 189, 248, 0.7),
+      0 0 18px rgba(14, 165, 233, 0.35);
+  }
+}
+
+/* Contenedor amplio de ruleta */
+.wrap {
+  position: relative;
+  width: min(92vw, 68vh, 620px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+#wheel {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform-origin: center center;
+  filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.7));
+}
+
+/* Aguja indicadora */
+.pointer-box {
+  position: absolute;
+  left: 50%;
+  top: -4.5%;
+  width: 9%;
+  height: 14%;
+  transform: translateX(-50%);
+  transform-origin: 50% 15%;
+  z-index: 4;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.55));
+  transition: transform 0.08s ease-out;
+}
+
+.pointer-box.flick {
+  transform: translateX(-50%) rotate(-16deg);
+}
+
+.pointer-box svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Botón de giro */
+#spin {
+  font: inherit;
+  font-weight: 700;
+  font-size: clamp(1.2rem, 3.8vw, 1.7rem);
+  padding: .6em 2.4em;
+  border: 2px solid #00f2ff;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00f2ff 0%, #0066ff 100%);
+  color: #0c081f;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(0, 242, 255, 0.45), 0 4px 0 #0044aa;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.1s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+#spin:hover:not(:disabled) {
+  filter: brightness(1.15);
+  box-shadow: 0 0 25px rgba(0, 242, 255, 0.7), 0 4px 0 #0044aa;
+}
+
+#spin:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 4px 12px rgba(255, 159, 28, 0.45), 0 1px 0 #cc7700;
+}
+
+#spin:disabled {
+  opacity: .5;
+  filter: grayscale(0.6);
+  cursor: not-allowed;
+}
+
+/* Modal y Pop-up */
+/* ==================== MODAL NEÓN ==================== */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 4, 18, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#modal.show {
+  display: flex;
+}
+
+.card {
+  background: radial-gradient(circle at top, #1c1340 0%, #0d0822 100%);
+  color: #ffffff;
+  border-radius: 28px;
+  padding: clamp(26px, 5vw, 42px);
+  text-align: center;
+  max-width: 410px;
+  width: 100%;
+  position: relative;
+  animation: pop 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Estado: GANADOR (Luz neón cian eléctrico) */
+.card.is-win {
+  border: 2px solid #00f2ff;
+  box-shadow: 
+    0 0 35px rgba(0, 242, 255, 0.4),
+    inset 0 0 20px rgba(0, 242, 255, 0.12);
+}
+
+.card.is-win h2 {
+  color: #00f2ff;
+  text-shadow: 
+    0 0 10px rgba(0, 242, 255, 0.8),
+    0 0 22px rgba(0, 242, 255, 0.4);
+}
+
+.card.is-win #close {
+  border: 2px solid #00f2ff;
+  background: linear-gradient(135deg, #00f2ff 0%, #0066ff 100%);
+  color: #080518;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.45);
+}
+
+.card.is-win #close:hover {
+  box-shadow: 0 0 28px rgba(0, 242, 255, 0.8);
+}
+
+/* Estado: SIN PREMIO (Luz neón fucsia / magenta) */
+.card.is-miss {
+  border: 2px solid #ff0055;
+  box-shadow: 
+    0 0 35px rgba(255, 0, 85, 0.4),
+    inset 0 0 20px rgba(255, 0, 85, 0.12);
+}
+
+.card.is-miss h2 {
+  color: #ff0055;
+  text-shadow: 
+    0 0 10px rgba(255, 0, 85, 0.8),
+    0 0 22px rgba(255, 0, 85, 0.4);
+}
+
+.card.is-miss #close {
+  border: 2px solid #ff0055;
+  background: linear-gradient(135deg, #ff007f 0%, #990033 100%);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.45);
+}
+
+.card.is-miss #close:hover {
+  box-shadow: 0 0 28px rgba(255, 0, 85, 0.8);
+}
+
+/* Contenido interno */
+.card .icon-preview {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.35));
+}
+
+.card h2 {
+  margin: 0.25em 0 0.2em;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.card p {
+  margin: 0 0 1.4em;
+  font-size: clamp(1rem, 3.2vw, 1.2rem);
+  color: #d1d5db;
+  line-height: 1.4;
+}
+
+#close {
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0.6em 2.2em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+#close:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+#close:active {
+  transform: translateY(1px);
+}
+
+/* Lienzo de confeti */
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+@keyframes pop {
+  from { transform: scale(0.75); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
