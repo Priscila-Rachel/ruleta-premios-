@@ -1,23 +1,23 @@
 const OPTS = [
-  // Nada: Violeta oscuro tipo "luz negra" para que no corte la estética neón
+  // 1. Nada: Violeta oscuro
   { k: 'x', l: 'Nada', icon: 'ico-x', c1: '#362354', c2: '#160e24', t: '¡Casi!', m: 'Esta vez no hubo premio. ¡Probá otra vez!' },
   
-  // Llavero: Celeste / Cian eléctrico directo del título
+  // 2. Llavero: Celeste / Cian eléctrico
   { k: 'llavero', l: 'Llavero', icon: 'ico-llavero', c1: '#00f2ff', c2: '#0066ff', t: '¡Ganaste un llavero!', m: '¡Felicitaciones, ya es tuyo!' },
   
-  // Figura chica: Verde láser / menta neón
+  // 3. Figura chica: Verde láser
   { k: 'figura', l: 'Figura chica', icon: 'ico-figura', c1: '#00ff9d', c2: '#008a4b', t: '¡Ganaste una figura!', m: '¡Genial! Pasá a retirar tu premio.' },
   
-  // Nada: Azul noche profundo
+  // 4. Nada: Azul noche profundo
   { k: 'x', l: 'Nada', icon: 'ico-x', c1: '#222947', c2: '#0f1322', t: '¡Casi!', m: 'Esta vez no hubo suerte. ¡Volvé a girar!' },
   
-  // Llavero: Naranja eléctrico fluorescente
+  // 5. Llavero: Naranja eléctrico
   { k: 'llavero', l: 'Llavero', icon: 'ico-llavero', c1: '#ff7700', c2: '#b83200', t: '¡Ganaste un llavero!', m: '¡Premio desbloqueado con éxito!' },
   
-  // Figura chica: Fucsia / Rosa neón intenso
-  { k: 'figura', l: 'Figura chica', icon: 'ico-figura', c1: '#ff007f', c2: '#940045', t: '¡Ganaste una figura!', m: '¡Excelente tiro, te llevás la figura!' },
+  // 6. Tirada gratis: Magenta / Púrpura eléctrico
+  { k: 'free', l: 'Tiro extra', icon: 'ico-tiro-gratis', c1: '#d900ff', c2: '#770099', t: '¡Tirada gratis!', m: '¡Tenés otra oportunidad sin cargo! Volvé a probar tu suerte.' },
   
-  // Sorpresa: Amarillo neón / oro radioactivo
+  // 7. Sorpresa: Amarillo neón / oro
   { k: 'sorpresa', l: 'Sorpresa', icon: 'ico-sorpresa', c1: '#ffee00', c2: '#d48800', t: '¡Premio sorpresa!', m: '¡Misterio develado! Preguntá por tu regalo especial.' }
 ];
 
@@ -146,6 +146,14 @@ function buildWheel() {
       <rect x="22" y="13" width="6" height="29" fill="#ff007f"/>
       <path d="M25 13 C21 6 15 9 19 13 C15 13 15 5 25 13 C35 5 35 13 31 13 C35 9 29 6 25 13" fill="#ff007f"/>
     </symbol>
+
+    <symbol id="ico-tiro-gratis" viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="22" fill="rgba(0,0,0,0.25)"/>
+      <!-- Flecha circular neón -->
+      <path d="M25 10 A15 15 0 1 1 11 28" fill="none" stroke="#00f2ff" stroke-width="4" stroke-linecap="round"/>
+      <path d="M25 5 L31 10 L25 15 Z" fill="#00f2ff"/>
+      <circle cx="25" cy="25" r="4" fill="#ffee00"/>
+    </symbol>
   </defs>`;
 
   s += `<g id="wheelPlate">`;
@@ -236,12 +244,20 @@ function finishSpin(result) {
   const card = document.querySelector('.card');
   const isWin = result.k !== 'x';
 
-  // Activa el modo neón cian (ganador) o neón magenta (sin premio)
+  // Activa el modo neón ganador para premios y tiro gratis
   card.className = isWin ? 'card is-win' : 'card is-miss';
 
   document.getElementById('rIcon').innerHTML = `<svg viewBox="0 0 50 50" width="85" height="85"><use href="#${result.icon}" width="50" height="50"/></svg>`;
   document.getElementById('rTitle').textContent = result.t;
   document.getElementById('rText').textContent = result.m;
+  
+  // Cambia el texto del botón si es tirada gratis
+  if (result.k === 'free') {
+    closeBtn.textContent = '¡Girar de nuevo!';
+  } else {
+    closeBtn.textContent = 'Seguir jugando';
+  }
+
   modal.classList.add('show');
 
   if (isWin) {
@@ -253,10 +269,13 @@ function finishSpin(result) {
   closeBtn.focus();
 }
 
+
+/* ==================== CONFETI NEÓN ==================== */
 /* ==================== CONFETI NEÓN ==================== */
 const canvas = document.getElementById('confettiCanvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
+let animId = null;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -266,22 +285,32 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 function launchConfetti() {
+  // Asegura medidas reales de pantalla al disparar
+  resizeCanvas();
+
+  // Si había una animación previa corriendo, la frena para no duplicar frames
+  if (animId) cancelAnimationFrame(animId);
+
   particles = [];
-  // Paleta de partículas neón a juego
   const colors = ['#00f2ff', '#ff007f', '#00ff9d', '#ffee00', '#ff7700', '#ffffff'];
+
+  const originX = canvas.width > 0 ? canvas.width / 2 : window.innerWidth / 2;
+  const originY = canvas.height > 0 ? canvas.height / 2 : window.innerHeight / 2;
+
   for (let i = 0; i < 90; i++) {
     particles.push({
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      vx: (Math.random() - 0.5) * 16,
-      vy: (Math.random() - 0.8) * 18,
-      size: Math.random() * 8 + 5,
+      x: originX,
+      y: originY,
+      vx: (Math.random() - 0.5) * 18,
+      vy: (Math.random() - 0.8) * 20,
+      size: Math.random() * 8 + 6,
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
       rotSpeed: (Math.random() - 0.5) * 12,
       alpha: 1
     });
   }
+
   renderConfetti();
 }
 
@@ -292,9 +321,9 @@ function renderConfetti() {
   particles.forEach((p) => {
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += 0.35;
+    p.vy += 0.35; // Gravedad
     p.rotation += p.rotSpeed;
-    p.alpha -= 0.009;
+    p.alpha -= 0.009; // Desvanecimiento progresivo
 
     if (p.alpha > 0) {
       stillAlive = true;
@@ -309,9 +338,10 @@ function renderConfetti() {
   });
 
   if (stillAlive) {
-    requestAnimationFrame(renderConfetti);
+    animId = requestAnimationFrame(renderConfetti);
   } else {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    animId = null;
   }
 }
 

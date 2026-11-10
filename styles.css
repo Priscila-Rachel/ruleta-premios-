@@ -323,3 +323,13 @@ h1 {
   from { transform: scale(0.75); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+#confettiCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* Permite hacer clic a través del confeti */
+  z-index: 9999;        /* Obligatorio: debe ser más alto que el fondo y el modal */
+}
